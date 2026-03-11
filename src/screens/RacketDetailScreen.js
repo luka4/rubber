@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import Share from "react-native-share";
+import { Alert, FlatList, Modal, Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import useAppStore from "../store/useAppStore";
 import CircularHealth from "../components/CircularHealth";
 import ReminderModal from "../components/ReminderModal";
@@ -69,8 +68,13 @@ export default function RacketDetailScreen({ route }) {
   const shareSetup = async () => {
     const fhText = forehand ? `${forehand.brand} ${forehand.series} (${fhHealth}%)` : "Unassigned";
     const bhText = backhand ? `${backhand.brand} ${backhand.series} (${bhHealth}%)` : "Unassigned";
-    const message = `Check out my setup: Blade: ${racket.name}, FH: ${fhText}, BH: ${bhText}`;
-    await Share.open({ message });
+    const message = `Check out my Table Tennis setup!\nBlade: ${racket.name}\nFH: ${fhText}\nBH: ${bhText}`;
+
+    try {
+      await Share.share({ message });
+    } catch (error) {
+      Alert.alert("Sharing failed", error?.message ?? "Unknown error");
+    }
   };
 
   const RubberCard = ({ side, rubber, health }) => (
