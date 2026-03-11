@@ -3,13 +3,14 @@
     "name": "Table Tennis Rubber Track",
     "slug": "table-tennis-rubber-track",
     "version": "1.0.0",
+    "owner": "luka4",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "assetBundlePatterns": [
       "**/*"
     ],
     "android": {
-      "package": "com.example.tabletennisrubbertrack",
+      "package": "com.spintrack.rubberapp",
       "permissions": [
         "POST_NOTIFICATIONS"
       ]
@@ -22,6 +23,11 @@
         }
       ],
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "10e017f7-18eb-4d47-80a3-e967cc633567"
+      }
+    }
   }
 }
