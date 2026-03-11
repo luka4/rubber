@@ -2,9 +2,7 @@ import "react-native-gesture-handler";
 import React, { useEffect } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import * as Notifications from "expo-notifications";
-import mobileAds from "react-native-google-mobile-ads";
 import AppNavigator from "./src/navigation/AppNavigator";
-import BottomAdBanner from "./src/components/BottomAdBanner";
 import { requestNotificationPermissions } from "./src/utils/notifications";
 
 Notifications.setNotificationHandler({
@@ -20,7 +18,6 @@ Notifications.setNotificationHandler({
 export default function App() {
   useEffect(() => {
     requestNotificationPermissions();
-    mobileAds().initialize();
   }, []);
 
   return (
@@ -29,7 +26,6 @@ export default function App() {
       <View style={styles.content}>
         <AppNavigator />
       </View>
-      <BottomAdBanner />
     </View>
   );
 }
@@ -41,6 +37,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingBottom: 58,
   },
 });
