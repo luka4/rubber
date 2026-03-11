@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Table Tennis Rubber Track",
+    "slug": "table-tennis-rubber-track",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.example.tabletennisrubbertrack",
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713"
+        }
+      ],
+      "expo-notifications"
+    ]
+  }
+}
