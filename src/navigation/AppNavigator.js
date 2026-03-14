@@ -3,6 +3,7 @@ import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RacketsScreen from "../screens/RacketsScreen";
 import RacketDetailScreen from "../screens/RacketDetailScreen";
 import RubbersScreen from "../screens/RubbersScreen";
@@ -52,8 +53,11 @@ export default function AppNavigator() {
           tabBarActiveTintColor: "#2ECC71",
           tabBarInactiveTintColor: "#7C8798",
           tabBarIcon: ({ color, size }) => {
+            if (route.name === "Rackets") {
+              return <MaterialCommunityIcons name="table-tennis" size={size} color={color} />;
+            }
+
             const iconMap = {
-              Rackets: "tennisball",
               Rubbers: "layers",
               Settings: "settings",
             };

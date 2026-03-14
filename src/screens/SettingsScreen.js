@@ -31,6 +31,11 @@ export default function SettingsScreen() {
 
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>Rubber Lifespan Rule</Text>
+        <Text style={styles.infoDescription}>
+          Rubber wear is calculated from both played hours and each rubber's durability rating.
+          Durability values are based on review data from revspin.net, so tougher rubbers keep
+          health longer than less durable ones.
+        </Text>
         <Text style={styles.infoText}>Pro: {LIFESPAN_BY_SKILL.Pro}h</Text>
         <Text style={styles.infoText}>Intermediate: {LIFESPAN_BY_SKILL.Intermediate}h</Text>
         <Text style={styles.infoText}>Amateur: {LIFESPAN_BY_SKILL.Amateur}h</Text>
@@ -66,5 +71,6 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   infoTitle: { color: "#FFF", fontWeight: "800", marginBottom: 8 },
+  infoDescription: { color: "#C7D4E8", marginBottom: 10, lineHeight: 20 },
   infoText: { color: "#B7C1D5", marginBottom: 4 },
 });

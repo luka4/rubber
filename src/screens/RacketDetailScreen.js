@@ -1,12 +1,33 @@
 import React, { useMemo, useState } from "react";
-import { Alert, FlatList, Modal, Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Modal,
+  Pressable,
+  Share,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import useAppStore from "../store/useAppStore";
 import CircularHealth from "../components/CircularHealth";
 import ReminderModal from "../components/ReminderModal";
-import { fireCleaningReminder } from "../utils/notifications";
-import { getHealth } from "../utils/lifespan";
+import { getDurability, getHealth } from "../utils/lifespan";
 
-export default function RacketDetailScreen({ route }) {
+const getColorHex = (colorId) =>
+  (
+    {
+      red: "#D62828",
+      black: "#101010",
+      green: "#2ECC71",
+      "light-blue": "#4FC3F7",
+      pink: "#FF5CA8",
+      purple: "#9B59B6",
+    }[colorId]
+  ) ?? "#101010";
+
+export default function RacketDetailScreen({ route, navigation }) {
   const { racketId } = route.params;
   const [manualHours, setManualHours] = useState("");
   const [assignSide, setAssignSide] = useState(null);
@@ -22,10 +43,22 @@ export default function RacketDetailScreen({ route }) {
   const forehand = rubbers.find((x) => x.id === racket?.forehandRubberId) || null;
   const backhand = rubbers.find((x) => x.id === racket?.backhandRubberId) || null;
 
-  const fhHealth = forehand ? getHealth(forehand.hoursPlayed, skillLevel) : null;
-  const bhHealth = backhand ? getHealth(backhand.hoursPlayed, skillLevel) : null;
+  const fhHealth = forehand
+    ? getHealth(forehand.hoursPlayed, skillLevel, getDurability(forehand.brand, forehand.series))
+    : null;
+  const bhHealth = backhand
+    ? getHealth(backhand.hoursPlayed, skillLevel, getDurability(backhand.brand, backhand.series))
+    : null;
 
   const inventory = useMemo(() => [...rubbers].sort((a, b) => b.createdAt - a.createdAt), [rubbers]);
+  const assignedMap = useMemo(() => {
+    const map = {};
+    rackets.forEach((r) => {
+      if (r.forehandRubberId) map[r.forehandRubberId] = { racketId: r.id, side: "FH", racketName: r.name };
+      if (r.backhandRubberId) map[r.backhandRubberId] = { racketId: r.id, side: "BH", racketName: r.name };
+    });
+    return map;
+  }, [rackets]);
 
   if (!racket) {
     return (
@@ -37,7 +70,6 @@ export default function RacketDetailScreen({ route }) {
 
   const postLogActions = async () => {
     setShowReminder(true);
-    await fireCleaningReminder();
   };
 
   const quickLog = async () => {
@@ -55,7 +87,11 @@ export default function RacketDetailScreen({ route }) {
 
   const assign = (rubberId) => {
     if (!assignSide) return;
-    assignRubberToRacket({ racketId, side: assignSide, rubberId });
+    const ok = assignRubberToRacket({ racketId, side: assignSide, rubberId });
+    if (!ok) {
+      Alert.alert("Rubber already assigned", "This rubber is already assigned to another side or racket.");
+      return;
+    }
     setAssignSide(null);
   };
 
@@ -63,6 +99,17 @@ export default function RacketDetailScreen({ route }) {
     if (!assignSide) return;
     assignRubberToRacket({ racketId, side: assignSide, rubberId: null });
     setAssignSide(null);
+  };
+
+  const openRubbersForAddAndAssign = () => {
+    if (!assignSide) return;
+    setAssignSide(null);
+    navigation.navigate("Rubbers", {
+      pendingAssign: {
+        racketId,
+        side: assignSide,
+      },
+    });
   };
 
   const shareSetup = async () => {
@@ -139,16 +186,42 @@ export default function RacketDetailScreen({ route }) {
             <Pressable style={styles.unassignBtn} onPress={unassign}>
               <Text style={styles.unassignText}>Unassign</Text>
             </Pressable>
+            <Pressable style={styles.addInlineBtn} onPress={openRubbersForAddAndAssign}>
+              <Text style={styles.addInlineText}>Add & Assign to {assignSide}</Text>
+            </Pressable>
 
             <FlatList
               data={inventory}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <Pressable style={styles.inventoryItem} onPress={() => assign(item.id)}>
-                  <Text style={styles.inventoryText}>
-                    {item.brand} {item.series}
+                <Pressable
+                  style={[
+                    styles.inventoryItem,
+                    assignedMap[item.id] &&
+                    !(assignedMap[item.id].racketId === racketId && assignedMap[item.id].side === assignSide)
+                      ? styles.inventoryItemDisabled
+                      : null,
+                  ]}
+                  onPress={() => assign(item.id)}
+                  disabled={
+                    !!assignedMap[item.id] &&
+                    !(assignedMap[item.id].racketId === racketId && assignedMap[item.id].side === assignSide)
+                  }
+                >
+                  <View style={styles.inventoryTopRow}>
+                    <View style={styles.inventoryColorDot}>
+                      <Text style={[styles.inventoryColorGlyph, { color: getColorHex(item.color) }]}>●</Text>
+                    </View>
+                    <Text style={styles.inventoryText}>
+                      {item.brand} {item.series}
+                    </Text>
+                  </View>
+                  <Text style={styles.inventorySub}>
+                    {item.hoursPlayed}h played
+                    {assignedMap[item.id]
+                      ? ` • Assigned to ${assignedMap[item.id].racketName} (${assignedMap[item.id].side})`
+                      : ""}
                   </Text>
-                  <Text style={styles.inventorySub}>{item.hoursPlayed}h played</Text>
                 </Pressable>
               )}
             />
@@ -252,6 +325,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   unassignText: { color: "#FF9DB5", fontWeight: "800" },
+  addInlineBtn: {
+    marginBottom: 10,
+    backgroundColor: "#2ECC71",
+    borderRadius: 9,
+    alignItems: "center",
+    paddingVertical: 9,
+  },
+  addInlineText: { color: "#08110B", fontWeight: "900" },
   inventoryItem: {
     backgroundColor: "#172131",
     borderWidth: 1,
@@ -259,6 +340,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 8,
+  },
+  inventoryItemDisabled: {
+    opacity: 0.5,
+  },
+  inventoryTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  inventoryColorDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F6FA",
+  },
+  inventoryColorGlyph: {
+    fontSize: 12,
+    lineHeight: 12,
   },
   inventoryText: { color: "#FFF", fontWeight: "800" },
   inventorySub: { color: "#9DA9BB", marginTop: 2 },

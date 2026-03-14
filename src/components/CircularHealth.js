@@ -3,43 +3,44 @@ import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { getHealthColor } from "../utils/lifespan";
 
-const SIZE = 88;
-const STROKE = 9;
-const RADIUS = (SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-export default function CircularHealth({ health }) {
+export default function CircularHealth({ health, size = 88, stroke = 9 }) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, health));
   const color = getHealthColor(clamped);
-  const progress = CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE;
+  const progress = circumference - (clamped / 100) * circumference;
 
   return (
-    <View style={styles.wrapper}>
-      <Svg width={SIZE} height={SIZE}>
+    <View style={[styles.wrapper, { width: size, height: size }]}>
+      <Svg width={size} height={size}>
         <Circle
           stroke="#1B2230"
           fill="none"
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          strokeWidth={STROKE}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={stroke}
         />
         <Circle
           stroke={color}
           fill="none"
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          strokeWidth={STROKE}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={stroke}
           strokeLinecap="round"
-          strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+          strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={progress}
           rotation="-90"
-          origin={`${SIZE / 2}, ${SIZE / 2}`}
+          origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
       <View style={styles.labelWrap}>
-        <Text style={[styles.value, { color }]}>{clamped}%</Text>
+        <Text
+          style={[styles.value, { color, fontSize: Math.max(11, Math.round(size * 0.2)) }]}
+        >
+          {clamped}%
+        </Text>
       </View>
     </View>
   );
@@ -47,8 +48,6 @@ export default function CircularHealth({ health }) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: SIZE,
-    height: SIZE,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -58,7 +57,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   value: {
-    fontSize: 17,
     fontWeight: "800",
   },
 });
